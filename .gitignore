@@ -12,3 +12,4 @@ backups
 Library
 .cache
 __pycache__
+tmp
