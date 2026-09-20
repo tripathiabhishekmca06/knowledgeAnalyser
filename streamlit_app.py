@@ -1,4 +1,5 @@
 import math
+import time
 import urllib.parse
 
 import streamlit as st
@@ -215,6 +216,29 @@ def readiness_band(score_percent: int) -> tuple[str, str]:
 def reset_scan() -> None:
     st.session_state.answers = {}
     st.session_state.submitted = False
+    st.session_state.plan_requested = False
+
+
+def unique_subjects(subjects: list[str], limit: int = 5) -> list[str]:
+    return list(dict.fromkeys(subjects))[:limit]
+
+
+def show_loading_overlay() -> None:
+    overlay = st.empty()
+    overlay.markdown(
+        """
+        <div class="loading-overlay">
+          <div class="loading-card">
+            <div class="spinner"></div>
+            <div class="loading-title">Analyzing your UPSC knowledge snapshot</div>
+            <div class="loading-copy">Checking accuracy, weak areas, and next-step plan...</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    time.sleep(1.4)
+    overlay.empty()
 
 
 def main() -> None:
@@ -246,6 +270,66 @@ def main() -> None:
             background: #ecfeff;
             border-radius: 8px;
         }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.58);
+            backdrop-filter: blur(6px);
+        }
+        .loading-card {
+            width: min(92vw, 520px);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 1.5rem;
+            border: 1px solid #dbe4ef;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(15, 23, 42, 0.32);
+        }
+        .spinner {
+            width: 46px;
+            height: 46px;
+            margin: 0 auto 1rem;
+            border: 5px solid #ccfbf1;
+            border-top-color: #0f766e;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.35rem;
+        }
+        .loading-copy { color: #475569; font-size: 0.95rem; }
+        .paywall-card {
+            border: 1px solid #fed7aa;
+            background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .price-pill {
+            display: inline-block;
+            background: #dc2626;
+            color: #ffffff;
+            border-radius: 999px;
+            padding: 0.25rem 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .locked-preview {
+            border: 1px dashed #fb923c;
+            background: rgba(255, 247, 237, 0.75);
+            border-radius: 8px;
+            padding: 0.9rem;
+            margin: 0.8rem 0;
+        }
+        .muted-note { color: #64748b; font-size: 0.92rem; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -262,7 +346,8 @@ def main() -> None:
 
     with st.expander("Privacy note", expanded=False):
         st.write(
-            "This public readiness scan does not ask for phone number, email, OTP, Aadhaar, or address. "
+            "The free readiness scan does not ask for phone number, email, OTP, Aadhaar, or address. "
+            "WhatsApp is requested only if you choose to activate the paid improvement plan. "
             "Answers are held only in your current browser session."
         )
 
@@ -283,6 +368,7 @@ def main() -> None:
             st.warning(f"Please answer all questions before submitting. Missing: {', '.join(map(str, unanswered))}")
             st.session_state.submitted = False
         else:
+            show_loading_overlay()
             st.session_state.submitted = True
 
     if st.session_state.submitted:
@@ -300,7 +386,9 @@ def main() -> None:
 
         percent = math.floor((correct / len(QUESTIONS)) * 100)
         band, summary = readiness_band(percent)
+        priority_subjects = unique_subjects(weak_domains)
         st.divider()
+        st.markdown("<p class='muted-note'>Free diagnostic snapshot</p>", unsafe_allow_html=True)
         st.markdown(f"<div class='result-band'><h3>{band}</h3><p>{summary}</p></div>", unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns(3)
@@ -309,28 +397,86 @@ def main() -> None:
         col3.metric("Campaign", CAMPAIGN_CODE)
 
         st.subheader("Priority subject areas")
-        if weak_domains:
-            for domain in list(dict.fromkeys(weak_domains))[:5]:
+        if priority_subjects:
+            for domain in priority_subjects:
                 st.write(f"- {domain}")
         else:
             st.write("- Keep solving mixed-topic PYQs and timed mini-tests.")
 
-        st.subheader("7-day action plan")
-        st.write("- Day 1: Review every wrong question and write the concept behind it.")
-        st.write("- Day 2-3: Revise the weakest two subjects from NCERT/basic notes.")
-        st.write("- Day 4: Solve 25 PYQs from Polity, Economy, Geography, and Environment.")
-        st.write("- Day 5: Make one-page error notes for repeated mistakes.")
-        st.write("- Day 6: Attempt a mixed 30-minute mini-test.")
-        st.write("- Day 7: Repeat a knowledge diagnostic and compare accuracy.")
+        st.subheader("Free next steps")
+        if priority_subjects:
+            first_subjects = ", ".join(priority_subjects[:2])
+            st.write(f"- Start with: {first_subjects}.")
+        st.write("- Review the concepts behind wrong answers before solving more questions.")
+        st.write("- Attempt one 30-minute mixed mini-test within the next 48 hours.")
 
-        with st.expander("Answer review", expanded=False):
-            for idx, question, selected, is_correct in review_rows:
-                marker = "Correct" if is_correct else "Review"
-                st.write(f"**{idx}. {question['domain']} - {marker}**")
-                st.write(f"Your answer: {selected}")
-                if not is_correct:
-                    st.write(f"Correct answer: {question['answer']}")
-                st.caption(question["explanation"])
+        locked_subjects = ", ".join(priority_subjects) if priority_subjects else "revision and timed practice"
+        st.markdown(
+            f"""
+            <div class="paywall-card">
+              <div class="price-pill">Unlock for ₹29/month</div>
+              <h3>Detailed UPSC improvement plan</h3>
+              <p>Your free score is ready. The paid plan unlocks a 30-day roadmap based on: <b>{locked_subjects}</b>.</p>
+              <div class="locked-preview">
+                <b>Included after activation</b><br />
+                - Full answer review with correct options and explanations<br />
+                - 30-day subject-wise study plan<br />
+                - Daily micro targets and practice prompts<br />
+                - Weekly re-test reminder on WhatsApp
+              </div>
+              <p class="muted-note">First diagnostic is free. Detailed plan and follow-up support continue at ₹29/month.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        with st.form("paid_plan_request"):
+            st.subheader("Activate ₹29/month plan")
+            name = st.text_input("Name")
+            city = st.text_input("City")
+            target_year = st.selectbox("Target exam year", ["2027", "2028", "2029", "Not sure yet"])
+            whatsapp_number = st.text_input("WhatsApp number")
+            plan_requested = st.form_submit_button("Continue on WhatsApp", type="primary")
+
+        if plan_requested:
+            missing_fields = [
+                label
+                for label, value in [
+                    ("name", name),
+                    ("city", city),
+                    ("WhatsApp number", whatsapp_number),
+                ]
+                if not value.strip()
+            ]
+            if missing_fields:
+                st.warning(f"Please enter: {', '.join(missing_fields)}.")
+            else:
+                st.session_state.plan_requested = True
+                weak_text = ", ".join(priority_subjects) if priority_subjects else "no major weak area in this scan"
+                activation_text = (
+                    f"Hi, I want to activate the ₹29/month UPSC improvement plan. "
+                    f"Name: {name}. City: {city}. Target year: {target_year}. "
+                    f"Score: {percent}% ({correct}/{len(QUESTIONS)}). Weak areas: {weak_text}. "
+                    f"Campaign: {CAMPAIGN_CODE}."
+                )
+                st.success("Your activation message is ready. Send it on WhatsApp to continue payment and onboarding.")
+                st.link_button("Open WhatsApp activation", "https://wa.me/?text=" + urllib.parse.quote(activation_text))
+
+        with st.expander("What unlocks after ₹29/month?", expanded=False):
+            st.write("- Full answer key and explanations for this scan.")
+            st.write("- Personal 30-day plan from your weak areas.")
+            st.write("- Daily WhatsApp study target.")
+            st.write("- Weekly progress check and repeat scan.")
+
+        if st.session_state.get("plan_requested"):
+            with st.expander("Paid-plan answer preview", expanded=False):
+                for idx, question, selected, is_correct in review_rows:
+                    marker = "Correct" if is_correct else "Review"
+                    st.write(f"**{idx}. {question['domain']} - {marker}**")
+                    st.write(f"Your answer: {selected}")
+                    if not is_correct:
+                        st.write(f"Correct answer: {question['answer']}")
+                    st.caption(question["explanation"])
 
         share_text = (
             f"I completed the UPSC Knowledge Readiness Scan ({CAMPAIGN_CODE}) and scored {percent}% "
