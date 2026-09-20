@@ -11,3 +11,4 @@ backups
 .npm
 Library
 .cache
+__pycache__
