@@ -8,104 +8,184 @@ CAMPAIGN_CODE = "UPSC-AZM-001"
 
 QUESTIONS = [
     {
-        "domain": "Study consistency",
-        "prompt": "How many focused study hours did you average per day this week?",
+        "domain": "Polity",
+        "prompt": "Which part of the Constitution of India contains the Fundamental Duties?",
         "options": [
-            ("Less than 2 hours", 1),
-            ("2 to 4 hours", 2),
-            ("4 to 6 hours", 3),
-            ("More than 6 hours", 4),
+            "Part III",
+            "Part IVA",
+            "Part V",
+            "Part IX",
         ],
+        "answer": "Part IVA",
+        "explanation": "Fundamental Duties are listed in Part IVA, Article 51A.",
     },
     {
-        "domain": "Syllabus coverage",
-        "prompt": "How clearly can you map the UPSC CSE syllabus to your current notes?",
+        "domain": "Polity",
+        "prompt": "The power of judicial review in India is mainly associated with which institution?",
         "options": [
-            ("I am still unsure about the syllabus", 1),
-            ("I know the broad areas", 2),
-            ("I can map most subjects", 3),
-            ("I can map subjects, gaps, and revision status", 4),
+            "Election Commission",
+            "Supreme Court and High Courts",
+            "Comptroller and Auditor General",
+            "Finance Commission",
         ],
+        "answer": "Supreme Court and High Courts",
+        "explanation": "Constitutional courts can examine laws and executive action for constitutional validity.",
     },
     {
-        "domain": "Concept clarity",
-        "prompt": "When you read a Polity or Economy topic, what usually happens?",
+        "domain": "Modern History",
+        "prompt": "The Non-Cooperation Movement was withdrawn after which event?",
         "options": [
-            ("I memorize lines without confidence", 1),
-            ("I understand after repeated reading", 2),
-            ("I can explain most concepts simply", 3),
-            ("I can connect concepts with PYQs and current affairs", 4),
+            "Jallianwala Bagh massacre",
+            "Chauri Chaura incident",
+            "Dandi March",
+            "Poona Pact",
         ],
+        "answer": "Chauri Chaura incident",
+        "explanation": "Gandhi withdrew the movement in 1922 after violence at Chauri Chaura.",
     },
     {
-        "domain": "Current affairs",
-        "prompt": "How often do you connect news with static subjects?",
+        "domain": "Ancient History",
+        "prompt": "Ashoka's inscriptions were mostly written in which script in the north-western region?",
         "options": [
-            ("Rarely", 1),
-            ("Sometimes", 2),
-            ("Most weeks", 3),
-            ("Almost daily", 4),
+            "Brahmi",
+            "Kharosthi",
+            "Devanagari",
+            "Grantha",
         ],
+        "answer": "Kharosthi",
+        "explanation": "Most inscriptions used Brahmi, but the north-west also used Kharosthi.",
     },
     {
-        "domain": "PYQ practice",
-        "prompt": "How do you use previous year questions?",
+        "domain": "Geography",
+        "prompt": "The Western Ghats are an important factor for rainfall on India's west coast mainly because they:",
         "options": [
-            ("I have not started PYQs", 1),
-            ("I solve them occasionally", 2),
-            ("I solve and review them by topic", 3),
-            ("I use them to guide notes, revision, and tests", 4),
+            "block the north-east monsoon",
+            "cause orographic rainfall from south-west monsoon winds",
+            "create winter cyclones",
+            "reduce humidity over the Arabian Sea",
         ],
+        "answer": "cause orographic rainfall from south-west monsoon winds",
+        "explanation": "Moist south-west monsoon winds rise over the Ghats and produce heavy orographic rain.",
     },
     {
-        "domain": "Revision",
-        "prompt": "What does your revision cycle look like?",
+        "domain": "Geography",
+        "prompt": "Which soil type is generally associated with the Deccan Trap region?",
         "options": [
-            ("No fixed revision cycle", 1),
-            ("Revision happens near tests", 2),
-            ("Weekly revision for important topics", 3),
-            ("Planned spaced revision with error notes", 4),
+            "Alluvial soil",
+            "Black cotton soil",
+            "Laterite soil",
+            "Desert soil",
         ],
+        "answer": "Black cotton soil",
+        "explanation": "Black soil is linked with basaltic parent material of the Deccan Trap.",
     },
     {
-        "domain": "Mock analysis",
-        "prompt": "After a mock test, what do you do?",
+        "domain": "Economy",
+        "prompt": "If the Reserve Bank of India increases the repo rate, the likely immediate objective is to:",
         "options": [
-            ("Only check the score", 1),
-            ("Review some wrong answers", 2),
-            ("Classify mistakes and update notes", 3),
-            ("Track mistake patterns and change strategy", 4),
+            "increase money supply",
+            "control inflationary pressure",
+            "reduce tax revenue",
+            "increase fiscal deficit",
         ],
+        "answer": "control inflationary pressure",
+        "explanation": "A higher repo rate can make borrowing costlier and help moderate inflation.",
     },
     {
-        "domain": "Answer writing",
-        "prompt": "How comfortable are you writing structured mains answers?",
+        "domain": "Economy",
+        "prompt": "Which of the following is a direct tax?",
         "options": [
-            ("Not started", 1),
-            ("Can write but struggle with structure", 2),
-            ("Can write a basic intro-body-conclusion", 3),
-            ("Can write with examples, balance, and time control", 4),
+            "Goods and Services Tax",
+            "Customs duty",
+            "Income tax",
+            "Excise duty",
         ],
+        "answer": "Income tax",
+        "explanation": "Income tax is levied directly on income; GST and customs are indirect taxes.",
     },
     {
-        "domain": "Time management",
-        "prompt": "How predictable is your weekly study plan?",
+        "domain": "Environment",
+        "prompt": "The term 'ecotone' refers to:",
         "options": [
-            ("Mostly unplanned", 1),
-            ("Planned but often missed", 2),
-            ("Mostly followed with small misses", 3),
-            ("Tracked and adjusted every week", 4),
+            "a protected wetland",
+            "a transition zone between two ecosystems",
+            "a species found only in deserts",
+            "a type of air pollutant",
         ],
+        "answer": "a transition zone between two ecosystems",
+        "explanation": "An ecotone is the transition area where two ecosystems meet.",
     },
     {
-        "domain": "Exam confidence",
-        "prompt": "If prelims were announced 90 days from now, how would you feel?",
+        "domain": "Environment",
+        "prompt": "Which gas is the largest contributor to the natural greenhouse effect?",
         "options": [
-            ("Very anxious and directionless", 1),
-            ("Concerned but ready to start seriously", 2),
-            ("Somewhat ready with clear gaps", 3),
-            ("Prepared with a focused 90-day plan", 4),
+            "Oxygen",
+            "Nitrogen",
+            "Water vapour",
+            "Hydrogen",
         ],
+        "answer": "Water vapour",
+        "explanation": "Water vapour contributes significantly to the natural greenhouse effect.",
+    },
+    {
+        "domain": "Science and Tech",
+        "prompt": "In vaccines, an antigen is used mainly to:",
+        "options": [
+            "increase blood sugar",
+            "trigger an immune response",
+            "reduce oxygen level",
+            "destroy red blood cells",
+        ],
+        "answer": "trigger an immune response",
+        "explanation": "Antigens stimulate the immune system to recognize a pathogen or pathogen-like material.",
+    },
+    {
+        "domain": "International Relations",
+        "prompt": "The term 'Most Favoured Nation' in trade generally means:",
+        "options": [
+            "a country receives exclusive military support",
+            "a country gets non-discriminatory trade treatment",
+            "a country is exempt from all tariffs",
+            "a country controls another country's currency",
+        ],
+        "answer": "a country gets non-discriminatory trade treatment",
+        "explanation": "MFN means a trading partner is treated no worse than other comparable partners.",
+    },
+    {
+        "domain": "Governance",
+        "prompt": "Social audit is most closely associated with:",
+        "options": [
+            "citizen review of public programmes",
+            "audit of private company profits",
+            "military inspection",
+            "judicial appointment",
+        ],
+        "answer": "citizen review of public programmes",
+        "explanation": "Social audit enables citizens and communities to scrutinize public schemes and delivery.",
+    },
+    {
+        "domain": "Ethics",
+        "prompt": "A civil servant refusing a valuable gift from a contractor primarily reflects:",
+        "options": [
+            "conflict of interest avoidance",
+            "delegated legislation",
+            "fiscal federalism",
+            "judicial activism",
+        ],
+        "answer": "conflict of interest avoidance",
+        "explanation": "Avoiding gifts from interested parties helps preserve integrity and impartiality.",
+    },
+    {
+        "domain": "CSAT",
+        "prompt": "A train covers 180 km in 3 hours. What is its average speed?",
+        "options": [
+            "45 km/h",
+            "50 km/h",
+            "60 km/h",
+            "90 km/h",
+        ],
+        "answer": "60 km/h",
+        "explanation": "Average speed = distance / time = 180 / 3 = 60 km/h.",
     },
 ]
 
@@ -113,22 +193,22 @@ QUESTIONS = [
 def readiness_band(score_percent: int) -> tuple[str, str]:
     if score_percent < 35:
         return (
-            "Foundation Builder",
-            "Your first win is structure: syllabus map, daily study blocks, and basic PYQ exposure.",
+            "Foundation Knowledge",
+            "Your current score shows that core concepts need rebuilding before full-length test practice.",
         )
     if score_percent < 60:
         return (
-            "Momentum Builder",
-            "You have started moving. The next leap comes from revision rhythm and mistake tracking.",
+            "Developing Knowledge",
+            "You have some coverage, but the result shows clear gaps across static and applied areas.",
         )
     if score_percent < 80:
         return (
-            "Exam Ready Builder",
-            "Your base is strong. Focus now on mock analysis, speed, and weak-area precision.",
+            "Prelims-Aware Knowledge",
+            "Your base is useful. Now improve accuracy with PYQs, revision, and mixed-subject practice.",
         )
     return (
-        "High Readiness",
-        "You are operating with strong habits. Protect consistency and refine edge cases.",
+        "Strong Knowledge Readiness",
+        "Your accuracy is strong for a quick diagnostic. Keep sharpening weak areas with timed practice.",
     )
 
 
@@ -173,7 +253,7 @@ def main() -> None:
 
     st.markdown(f"<div class='campaign'>Campaign {CAMPAIGN_CODE}</div>", unsafe_allow_html=True)
     st.title("UPSC Readiness Scan")
-    st.caption("A quick self-check for aspirants to understand current preparation readiness.")
+    st.caption("A quick knowledge diagnostic across common UPSC areas.")
 
     if "answers" not in st.session_state:
         st.session_state.answers = {}
@@ -182,62 +262,78 @@ def main() -> None:
 
     with st.expander("Privacy note", expanded=False):
         st.write(
-            "This Streamlit preview does not ask for phone number, email, OTP, Aadhaar, or address. "
+            "This public readiness scan does not ask for phone number, email, OTP, Aadhaar, or address. "
             "Answers are held only in your current browser session."
         )
 
     with st.form("readiness_scan"):
         for idx, question in enumerate(QUESTIONS, start=1):
-            labels = [option[0] for option in question["options"]]
+            labels = question["options"]
             st.radio(
                 f"{idx}. {question['prompt']}",
                 labels,
                 key=f"q_{idx}",
+                index=None,
             )
-        submitted = st.form_submit_button("See my readiness snapshot", type="primary")
+        submitted = st.form_submit_button("See my knowledge snapshot", type="primary")
 
     if submitted:
-        st.session_state.submitted = True
+        unanswered = [idx for idx in range(1, len(QUESTIONS) + 1) if st.session_state.get(f"q_{idx}") is None]
+        if unanswered:
+            st.warning(f"Please answer all questions before submitting. Missing: {', '.join(map(str, unanswered))}")
+            st.session_state.submitted = False
+        else:
+            st.session_state.submitted = True
 
     if st.session_state.submitted:
-        earned = 0
-        maximum = len(QUESTIONS) * 4
-        weak_domains: list[tuple[str, int]] = []
+        correct = 0
+        weak_domains: list[str] = []
+        review_rows = []
 
         for idx, question in enumerate(QUESTIONS, start=1):
             selected = st.session_state.get(f"q_{idx}")
-            score = next(score for label, score in question["options"] if label == selected)
-            earned += score
-            if score <= 2:
-                weak_domains.append((question["domain"], score))
+            is_correct = selected == question["answer"]
+            correct += int(is_correct)
+            review_rows.append((idx, question, selected, is_correct))
+            if not is_correct:
+                weak_domains.append(question["domain"])
 
-        percent = math.floor((earned / maximum) * 100)
+        percent = math.floor((correct / len(QUESTIONS)) * 100)
         band, summary = readiness_band(percent)
         st.divider()
         st.markdown(f"<div class='result-band'><h3>{band}</h3><p>{summary}</p></div>", unsafe_allow_html=True)
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("Readiness", f"{percent}%")
-        col2.metric("Answered", f"{len(QUESTIONS)}")
+        col1.metric("Knowledge score", f"{percent}%")
+        col2.metric("Correct", f"{correct}/{len(QUESTIONS)}")
         col3.metric("Campaign", CAMPAIGN_CODE)
 
-        st.subheader("Priority focus")
+        st.subheader("Priority subject areas")
         if weak_domains:
-            for domain, _score in weak_domains[:4]:
+            for domain in list(dict.fromkeys(weak_domains))[:5]:
                 st.write(f"- {domain}")
         else:
-            st.write("- Maintain consistency and increase full-length timed practice.")
+            st.write("- Keep solving mixed-topic PYQs and timed mini-tests.")
 
         st.subheader("7-day action plan")
-        st.write("- Day 1: Map syllabus gaps and mark three weak areas.")
-        st.write("- Day 2-3: Revise one static subject block with PYQs.")
-        st.write("- Day 4: Take a short sectional test.")
-        st.write("- Day 5: Create an error-note page from test mistakes.")
-        st.write("- Day 6: Connect current affairs to static notes.")
-        st.write("- Day 7: Repeat the scan and compare your readiness.")
+        st.write("- Day 1: Review every wrong question and write the concept behind it.")
+        st.write("- Day 2-3: Revise the weakest two subjects from NCERT/basic notes.")
+        st.write("- Day 4: Solve 25 PYQs from Polity, Economy, Geography, and Environment.")
+        st.write("- Day 5: Make one-page error notes for repeated mistakes.")
+        st.write("- Day 6: Attempt a mixed 30-minute mini-test.")
+        st.write("- Day 7: Repeat a knowledge diagnostic and compare accuracy.")
+
+        with st.expander("Answer review", expanded=False):
+            for idx, question, selected, is_correct in review_rows:
+                marker = "Correct" if is_correct else "Review"
+                st.write(f"**{idx}. {question['domain']} - {marker}**")
+                st.write(f"Your answer: {selected}")
+                if not is_correct:
+                    st.write(f"Correct answer: {question['answer']}")
+                st.caption(question["explanation"])
 
         share_text = (
-            f"I completed the UPSC Readiness Scan ({CAMPAIGN_CODE}) and scored {percent}% "
+            f"I completed the UPSC Knowledge Readiness Scan ({CAMPAIGN_CODE}) and scored {percent}% "
             f"as {band}."
         )
         whatsapp_url = "https://wa.me/?text=" + urllib.parse.quote(share_text)
