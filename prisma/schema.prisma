@@ -1,0 +1,455 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  EN
+  HI
+}
+
+enum AcquisitionType {
+  CAMPAIGN
+  SHARED_LINK
+  DIRECT
+}
+
+enum AssessmentStatus {
+  CREATED
+  STARTED
+  COMPLETED
+}
+
+enum QuestionSourceType {
+  AI_GENERATED
+  CURATED
+  FALLBACK
+  VERIFIED_CURRENT_AFFAIRS
+}
+
+enum ValidationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FAILED
+}
+
+enum CheckpointStatus {
+  ACTIVE
+  CONSUMED
+  EXPIRED
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+}
+
+model Campaign {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  examType        String?
+  city            String?
+  institution     String?
+  placement       String?
+  posterId        String?
+  audienceType    String?
+  languageHint    Language?
+  headlineVariant String?
+  active          Boolean  @default(true)
+  startDate       DateTime?
+  endDate         DateTime?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  events          CampaignEvent[]
+  assessments     AssessmentSession[]
+  shareLinks      ShareLink[]
+}
+
+model CampaignEvent {
+  id           String   @id @default(cuid())
+  campaignId   String?
+  visitorId    String?
+  sessionId    String?
+  eventType    String
+  metadata     Json     @default("{}")
+  correlationId String?
+  createdAt    DateTime @default(now())
+
+  campaign     Campaign? @relation(fields: [campaignId], references: [id])
+  visitor      Visitor?  @relation(fields: [visitorId], references: [id])
+
+  @@index([campaignId, eventType, createdAt])
+  @@index([visitorId, createdAt])
+}
+
+model Visitor {
+  id              String          @id @default(cuid())
+  visitorKey      String          @unique
+  language        Language        @default(EN)
+  acquisitionType AcquisitionType @default(DIRECT)
+  rootCampaignId  String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  sessions        VisitorSession[]
+  events          CampaignEvent[]
+  assessments     AssessmentSession[]
+  snapshots       ReadinessSnapshot[]
+  checkpoints     NextCheckpoint[]
+  shareLinks      ShareLink[]
+  subscriptions   Subscription[]
+}
+
+model VisitorSession {
+  id          String   @id @default(cuid())
+  visitorId   String
+  sessionKey  String   @unique
+  userAgent   String?
+  ipHash      String?
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  visitor     Visitor  @relation(fields: [visitorId], references: [id])
+}
+
+model ExamCatalog {
+  id          String   @id @default(cuid())
+  examType    String   @unique
+  displayName String
+  active      Boolean  @default(true)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stages      ExamStage[]
+  blueprints  ExamBlueprint[]
+  topics      SyllabusTopic[]
+  profiles    ScoringProfile[]
+}
+
+model ExamStage {
+  id          String      @id @default(cuid())
+  examType    String
+  code        String
+  labelEn     String
+  labelHi     String
+  order       Int         @default(0)
+  metadata    Json        @default("{}")
+
+  exam        ExamCatalog @relation(fields: [examType], references: [examType])
+  blueprints  ExamBlueprint[]
+
+  @@unique([examType, code])
+}
+
+model ExamBlueprint {
+  id                      String      @id @default(cuid())
+  examType                String
+  stageCode               String
+  version                 String
+  questionCount           Int         @default(10)
+  sections                Json
+  difficultyDistribution  Json
+  skillDistribution       Json
+  scoringProfileId        String?
+  expectedDurationSeconds Int         @default(480)
+  active                  Boolean     @default(true)
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  exam                    ExamCatalog @relation(fields: [examType], references: [examType])
+  stage                   ExamStage   @relation(fields: [examType, stageCode], references: [examType, code])
+  questionSets            QuestionSet[]
+
+  @@unique([examType, stageCode, version])
+}
+
+model SyllabusTopic {
+  id        String      @id @default(cuid())
+  examType  String
+  code      String
+  nameEn    String
+  nameHi    String
+  active    Boolean     @default(true)
+
+  exam      ExamCatalog @relation(fields: [examType], references: [examType])
+
+  @@unique([examType, code])
+}
+
+model ScoringProfile {
+  id          String      @id @default(cuid())
+  examType    String
+  stageCode   String
+  version     String
+  dimensions  Json
+  rules       Json
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  exam        ExamCatalog @relation(fields: [examType], references: [examType])
+  snapshots   ReadinessSnapshot[]
+
+  @@unique([examType, stageCode, version])
+}
+
+model QuestionSet {
+  id                String           @id @default(cuid())
+  cacheKey          String           @unique
+  examType          String
+  stageCode         String
+  subjectProfile    String           @default("GENERAL")
+  language          Language
+  cycle             String
+  blueprintVersion  String
+  promptVersion     String
+  generatorProvider String?
+  generatorModel    String?
+  validationStatus  ValidationStatus @default(PENDING)
+  validationResults Json             @default("{}")
+  generatedAt       DateTime?
+  expiresAt         DateTime?
+  active            Boolean          @default(true)
+  usageCount        Int              @default(0)
+  sourceType        QuestionSourceType @default(FALLBACK)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  blueprint         ExamBlueprint    @relation(fields: [examType, stageCode, blueprintVersion], references: [examType, stageCode, version])
+  questions         QuestionSetQuestion[]
+  assessments       AssessmentSession[]
+
+  @@index([examType, stageCode, language, active])
+}
+
+model Question {
+  id                          String             @id @default(cuid())
+  sourceType                  QuestionSourceType
+  language                    Language
+  stem                        String
+  options                     Json
+  correctOptionId             String
+  explanation                 String
+  incorrectOptionExplanations Json
+  topicCode                   String
+  subtopic                    String?
+  skill                       String
+  difficulty                  Int
+  expectedSeconds             Int
+  sourceContextIds            Json               @default("[]")
+  modelConfidence             Float?
+  active                      Boolean            @default(true)
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime           @updatedAt
+
+  questionSets                QuestionSetQuestion[]
+  answers                     AssessmentAnswer[]
+}
+
+model QuestionSetQuestion {
+  id            String      @id @default(cuid())
+  questionSetId String
+  questionId    String
+  position      Int
+
+  questionSet   QuestionSet @relation(fields: [questionSetId], references: [id], onDelete: Cascade)
+  question      Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([questionSetId, questionId])
+  @@unique([questionSetId, position])
+}
+
+model AssessmentSession {
+  id                    String           @id @default(cuid())
+  privateTokenHash       String           @unique
+  privateTokenPreview    String
+  ownershipKeyHash       String
+  visitorId             String
+  campaignId            String?
+  questionSetId          String
+  examType              String
+  stageCode             String
+  language              Language
+  status                AssessmentStatus @default(CREATED)
+  attemptNumber         Int              @default(1)
+  acquisitionType       AcquisitionType  @default(DIRECT)
+  sharedFromAssessmentId String?
+  presentedOrder        Json
+  startedAt             DateTime?
+  completedAt           DateTime?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  visitor               Visitor          @relation(fields: [visitorId], references: [id])
+  campaign              Campaign?        @relation(fields: [campaignId], references: [id])
+  questionSet           QuestionSet      @relation(fields: [questionSetId], references: [id])
+  answers               AssessmentAnswer[]
+  snapshots             ReadinessSnapshot[]
+  checkpoints           NextCheckpoint[]
+  shareLinks            ShareLink[]
+
+  @@index([visitorId, createdAt])
+}
+
+model AssessmentAnswer {
+  id             String            @id @default(cuid())
+  assessmentId   String
+  questionId     String
+  selectedOptionId String?
+  presentedOptions Json
+  responseTimeMs Int               @default(0)
+  answeredAt     DateTime          @default(now())
+  locked         Boolean           @default(false)
+
+  assessment     AssessmentSession @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  question       Question          @relation(fields: [questionId], references: [id])
+
+  @@unique([assessmentId, questionId])
+}
+
+model ReadinessSnapshot {
+  id                    String            @id @default(cuid())
+  assessmentId           String
+  visitorId              String
+  overallScore           Int
+  rawCorrect             Int
+  totalQuestions         Int
+  dimensionScores        Json
+  topicBreakdown         Json
+  skillBreakdown         Json
+  narrative              Json
+  scoringProfileId       String?
+  scoringProfileVersion  String
+  blueprintVersion       String
+  createdAt              DateTime          @default(now())
+
+  assessment             AssessmentSession @relation(fields: [assessmentId], references: [id])
+  visitor                Visitor           @relation(fields: [visitorId], references: [id])
+  scoringProfile         ScoringProfile?   @relation(fields: [scoringProfileId], references: [id])
+
+  @@unique([assessmentId])
+  @@index([visitorId, createdAt])
+}
+
+model NextCheckpoint {
+  id             String           @id @default(cuid())
+  visitorId      String
+  assessmentId   String
+  dueAt          DateTime
+  preferredSlot  String
+  status         CheckpointStatus @default(ACTIVE)
+  returnTokenHash String          @unique
+  tokenExpiresAt DateTime
+  consumedAt     DateTime?
+  createdAt      DateTime        @default(now())
+
+  visitor        Visitor          @relation(fields: [visitorId], references: [id])
+  assessment     AssessmentSession @relation(fields: [assessmentId], references: [id])
+}
+
+model AiUsage {
+  id            String   @id @default(cuid())
+  provider      String
+  model         String
+  purpose       String
+  cacheKey      String?
+  promptVersion String?
+  inputTokens   Int      @default(0)
+  outputTokens  Int      @default(0)
+  estimatedCost Decimal  @default(0)
+  latencyMs     Int      @default(0)
+  success       Boolean
+  failureType   String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt, success])
+}
+
+model CurrentAffairsContext {
+  id          String   @id @default(cuid())
+  title       String
+  sourceDate  DateTime
+  content     String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model ShareLink {
+  id                  String            @id @default(cuid())
+  publicTokenHash      String            @unique
+  publicTokenPreview   String
+  visitorId            String
+  assessmentId         String
+  campaignId           String?
+  includeScore         Boolean           @default(false)
+  createdAt            DateTime          @default(now())
+
+  visitor              Visitor           @relation(fields: [visitorId], references: [id])
+  assessment           AssessmentSession @relation(fields: [assessmentId], references: [id])
+  campaign             Campaign?         @relation(fields: [campaignId], references: [id])
+}
+
+model Subscription {
+  id                  String             @id @default(cuid())
+  visitorId           String
+  provider            String
+  providerCustomerId  String?
+  providerSubscriptionId String?
+  status              SubscriptionStatus @default(INACTIVE)
+  amountPaise         Int                @default(1900)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  visitor             Visitor            @relation(fields: [visitorId], references: [id])
+  paymentEvents       PaymentEvent[]
+}
+
+model PaymentEvent {
+  id             String       @id @default(cuid())
+  subscriptionId String?
+  provider       String
+  eventType      String
+  payload        Json
+  signatureHash  String?
+  processedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+}
+
+model WhatsappEvent {
+  id          String   @id @default(cuid())
+  eventType   String
+  payload     Json
+  phoneHash   String?
+  createdAt   DateTime @default(now())
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String?
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+}

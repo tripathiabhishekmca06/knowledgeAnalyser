@@ -1,0 +1,97 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: readiness
+      POSTGRES_USER: readiness
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-readiness}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U readiness -d readiness"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - postgres
+      - -c
+      - max_connections=40
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      APP_BASE_URL: ${APP_BASE_URL}
+      APP_DOMAIN: ${APP_DOMAIN}
+      DATABASE_URL: postgresql://readiness:${POSTGRES_PASSWORD:-readiness}@postgres:5432/readiness?schema=public
+      SESSION_SECRET: ${SESSION_SECRET}
+      TOKEN_SIGNING_SECRET: ${TOKEN_SIGNING_SECRET}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
+      AI_ENABLED: ${AI_ENABLED:-true}
+      AI_GLOBAL_KILL_SWITCH: ${AI_GLOBAL_KILL_SWITCH:-false}
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      MAX_AI_GENERATIONS_PER_HOUR: ${MAX_AI_GENERATIONS_PER_HOUR:-5}
+      MAX_AI_GENERATIONS_PER_DAY: ${MAX_AI_GENERATIONS_PER_DAY:-20}
+      FEATURE_CURRENT_AFFAIRS: ${FEATURE_CURRENT_AFFAIRS:-false}
+      FEATURE_CALENDAR_REMINDER: ${FEATURE_CALENDAR_REMINDER:-true}
+      FEATURE_WHATSAPP_SAVE: ${FEATURE_WHATSAPP_SAVE:-true}
+      WHATSAPP_CLOUD_API_ENABLED: ${WHATSAPP_CLOUD_API_ENABLED:-false}
+      MAX_WHATSAPP_OUTBOUND_PER_DAY: ${MAX_WHATSAPP_OUTBOUND_PER_DAY:-0}
+      FEATURE_PAYMENTS: ${FEATURE_PAYMENTS:-false}
+      FEATURE_SUBSCRIPTIONS: ${FEATURE_SUBSCRIPTIONS:-false}
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:
